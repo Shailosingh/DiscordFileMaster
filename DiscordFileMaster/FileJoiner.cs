@@ -80,28 +80,22 @@ namespace DiscordFileMaster
 
                     try
                     {
-                        //Cycle through each file and write to new output file
-                        FileInfo fi;
-                        long fileSize;
-                        int currentByte;
+                        //Make new output file
                         using (FileStream outStream = new FileStream(outputPath, FileMode.Create))
                         {
+                            //Cycle through every piece file
                             foreach (string fileDirectory in files)
                             {
+                                //Prompt user which file is being operated on
                                 progressCounter.Text = fileDirectory;
-                                fi = new FileInfo(fileDirectory);
-                                fileSize = fi.Length;
 
+                                //Append to new output file
                                 using (FileStream fs = File.OpenRead(fileDirectory))
                                 {
-                                    for (int index = 0; index < fileSize; index++)
-                                    {
-                                        currentByte = fs.ReadByte();
-                                        outStream.WriteByte((byte)currentByte);
-                                    }
-
+                                    fs.CopyTo(outStream);
                                 }
 
+                                //Increment progress bar
                                 progressBar.Increment(1);
                             }
                         }
