@@ -69,6 +69,10 @@ namespace DiscordFileMaster
             {
                 if (Directory.Exists(outputDirectory))
                 {
+                    //Temporarily diable window
+                    this.Enabled = false;
+                    this.Cursor = Cursors.WaitCursor;
+
                     //Get list of files in folder
                     string[] files = Directory.GetFiles(folderPath, "*.piece");
 
@@ -118,6 +122,10 @@ namespace DiscordFileMaster
                     {
                         progressCounter.Text = "Invalid Filename";
                     }
+
+                    //Enable window again
+                    this.Enabled = true;
+                    this.Cursor = Cursors.Default;
                 }
             }
         }

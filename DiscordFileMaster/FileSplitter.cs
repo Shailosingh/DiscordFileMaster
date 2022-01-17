@@ -68,6 +68,10 @@ namespace DiscordFileMaster
             {
                 if(Directory.Exists(folderPath))
                 {
+                    //Disable window
+                    this.Enabled = false;
+                    this.Cursor = Cursors.WaitCursor;
+
                     //Ensure file is readable
                     try
                     {
@@ -128,6 +132,10 @@ namespace DiscordFileMaster
                     {
                         byteCounter.Text = "File unable to be read";
                     }
+
+                    //Enable window
+                    this.Enabled = true;
+                    this.Cursor = Cursors.Default;
                 }
 
                 else

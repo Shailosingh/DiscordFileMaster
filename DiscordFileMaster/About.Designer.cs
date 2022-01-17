@@ -92,7 +92,7 @@ namespace DiscordFileMaster
             this.versionEntry.Name = "versionEntry";
             this.versionEntry.Size = new System.Drawing.Size(36, 20);
             this.versionEntry.TabIndex = 5;
-            this.versionEntry.Text = "1.03";
+            this.versionEntry.Text = "1.04";
             // 
             // About
             // 
