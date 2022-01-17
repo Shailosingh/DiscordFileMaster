@@ -1,4 +1,4 @@
-# DiscordFileMaster Version 1.0.3
+# DiscordFileMaster Version 1.0.4
 This program allows the user to split large files into 8 MB chunks for upload to Discord. It can also merge the 8 MB chunks back together. This is very useful for people who want to send large files in Discord to friends or use Discord as a storage medium for large files.
 
 ![image](https://cdn.discordapp.com/attachments/793633190572064788/867499799469228072/unknown.png)
