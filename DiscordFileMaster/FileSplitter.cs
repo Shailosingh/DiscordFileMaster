@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
+using FileMasterLibrary;
 
 namespace DiscordFileMaster
 {
@@ -63,91 +66,91 @@ namespace DiscordFileMaster
             //Get folder directory
             string folderPath = folderDirectoryBox.Text;
 
-            //Verify file and folder  paths
-            if(File.Exists(filePath))
+            //Disable window
+            this.Enabled = false;
+            this.Cursor = Cursors.WaitCursor;
+
+            //Calculate piece size (8 MB for discord)
+            int PIECE_SIZE = 8 * 1000 * 1000;
+
+            //Start up thread that will start the "FileSplit" thread and update the UI thread on its progress
+            Thread monitoringJoinThread = new Thread(() => StartSplit(filePath, folderPath, PIECE_SIZE));
+            monitoringJoinThread.Start();
+        }
+
+        private void StartSplit(string inputFile, string outputFolder, int pieceSize)
+        {
+            //Start up FileMaster instance
+            FileMaster fileMasterInstance = new FileMaster();
+
+            //Spin up thread to start splitting up large files into several pieces
+            Thread splitThread = new Thread(() => fileMasterInstance.FileSplit(inputFile, outputFolder, pieceSize));
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            splitThread.Start();
+
+            //Uses "Invoke" to update user on the parameters being validated
+            progressCounter.Invoke((MethodInvoker)delegate
             {
-                if(Directory.Exists(folderPath))
+                progressBar.Maximum = 100;
+                progressCounter.Text = "Validating...";
+            });
+            while (!fileMasterInstance.IsFinished && !fileMasterInstance.IsValidated) ;
+
+            //Check for errors and exit
+            if (fileMasterInstance.ExitError)
+            {
+                progressCounter.Invoke((MethodInvoker)delegate
                 {
-                    //Disable window
-                    this.Enabled = false;
-                    this.Cursor = Cursors.WaitCursor;
-
-                    //Ensure file is readable
-                    try
-                    {
-                        //CONSTANTS
-                        long BYTES_IN_8MEGS = 8 * 1000 * 1000;
-
-                        //Get file info
-                        FileInfo fi = new FileInfo(filePath);
-                        long fileSize = fi.Length;
-
-                        //Get number of files to be made
-                        long numberOfFiles = fileSize / BYTES_IN_8MEGS;
-                        if (fileSize % BYTES_IN_8MEGS != 0 || fileSize == 0)
-                        {
-                            numberOfFiles++;
-                        }
-
-                        //Set maximum for progress bar
-                        progressBar.Maximum = (int)numberOfFiles;
-
-                        //Cycle through bytes of file
-                        long fileIndex = 0;
-                        int fileNameLength = (int)Math.Ceiling(Math.Log10(numberOfFiles));
-                        string outFilePath = @$"{folderPath}\{fileIndex.ToString().PadLeft(fileNameLength, '0')}.piece"; //Pads 0s to the left to ensure alphabetical order is same as numeric
-                        int currentByte = 0;
-                        long bytesInFile = BYTES_IN_8MEGS;
-                        using (FileStream fs = File.OpenRead(filePath))
-                        {
-                            while (fileIndex < numberOfFiles)
-                            {
-                                byteCounter.Text = $"File {fileIndex}";
-                                using (FileStream outStream = new FileStream(outFilePath, FileMode.Create))
-                                {
-                                    if (fileIndex == numberOfFiles - 1)
-                                    {
-                                        bytesInFile = fileSize % BYTES_IN_8MEGS;
-                                    }
-
-                                    for (int index = 0; index < bytesInFile; index++)
-                                    {
-                                        currentByte = fs.ReadByte();
-                                        outStream.WriteByte((byte)currentByte);
-                                    }
-                                }
-
-                                fileIndex++;
-                                outFilePath = @$"{folderPath}\{fileIndex.ToString().PadLeft(fileNameLength, '0')}.piece";
-                                progressBar.Increment(1);
-
-                            }
-                        }
-
-                        //Send completion message and open folder location
-                        byteCounter.Text = "Complete!";
-                        System.Diagnostics.Process.Start("explorer.exe", folderPath);
-                    }
-                    catch
-                    {
-                        byteCounter.Text = "File unable to be read";
-                    }
-
-                    //Enable window
+                    progressCounter.Text = $"ERROR: {fileMasterInstance.StatusMessage}";
                     this.Enabled = true;
                     this.Cursor = Cursors.Default;
-                }
-
-                else
-                {
-                    byteCounter.Text = "Folder Does Not Exist";
-                }
+                });
+                return;
             }
 
-            else
+            progressCounter.Invoke((MethodInvoker)delegate
             {
-                byteCounter.Text = "File Does Not Exist";
+                progressCounter.Text = $"Total Number Of Pieces: {fileMasterInstance.TotalFiles}";
+            });
+
+            long currentNumFilesProcessed = 0;
+            while (!fileMasterInstance.IsFinished)
+            {
+                //Check if the number of files processed has changed
+                if (currentNumFilesProcessed != fileMasterInstance.NumFilesProcessed)
+                {
+                    currentNumFilesProcessed = fileMasterInstance.NumFilesProcessed;
+                    progressCounter.Invoke((MethodInvoker)delegate
+                    {
+                        progressCounter.Text = $"Pieces Created: {currentNumFilesProcessed}/{fileMasterInstance.TotalFiles}";
+                        progressBar.Value = 100 * (int)(currentNumFilesProcessed / fileMasterInstance.TotalFiles);
+                    });
+                }
             }
+
+            //Check for errors and exit
+            if (fileMasterInstance.ExitError)
+            {
+                progressCounter.Invoke((MethodInvoker)delegate
+                {
+                    progressCounter.Text = $"ERROR: {fileMasterInstance.StatusMessage}";
+                    this.Enabled = true;
+                    this.Cursor = Cursors.Default;
+                });
+                return;
+            }
+
+            //Split must be over
+            timer.Stop();
+            progressCounter.Invoke((MethodInvoker)delegate
+            {
+                progressCounter.Text = $"SPLIT COMPLETE! Took {timer.ElapsedMilliseconds} milliseconds.";
+                this.Enabled = true;
+                this.Cursor = Cursors.Default;
+            });
+            Process.Start("explorer.exe", outputFolder);
         }
+
     }
 }

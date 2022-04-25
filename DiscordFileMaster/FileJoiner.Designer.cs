@@ -57,7 +57,7 @@ namespace DiscordFileMaster
             // joinButton
             // 
             this.joinButton.Enabled = false;
-            this.joinButton.Location = new System.Drawing.Point(495, 220);
+            this.joinButton.Location = new System.Drawing.Point(495, 246);
             this.joinButton.Name = "joinButton";
             this.joinButton.Size = new System.Drawing.Size(108, 29);
             this.joinButton.TabIndex = 1;
@@ -144,7 +144,7 @@ namespace DiscordFileMaster
             // 
             // progressBar
             // 
-            this.progressBar.Location = new System.Drawing.Point(13, 220);
+            this.progressBar.Location = new System.Drawing.Point(13, 246);
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(476, 29);
             this.progressBar.TabIndex = 11;
@@ -154,16 +154,18 @@ namespace DiscordFileMaster
             this.progressCounter.AutoSize = true;
             this.progressCounter.Location = new System.Drawing.Point(13, 189);
             this.progressCounter.Name = "progressCounter";
-            this.progressCounter.Size = new System.Drawing.Size(69, 20);
+            this.progressCounter.Size = new System.Drawing.Size(594, 20);
             this.progressCounter.TabIndex = 12;
-            this.progressCounter.Text = "Waiting...";
+            this.progressCounter.Text = "Waiting.........................................................................." +
+    "................................................................................" +
+    "........................";
             // 
             // launchCheckBox
             // 
             this.launchCheckBox.AutoSize = true;
             this.launchCheckBox.Checked = true;
             this.launchCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.launchCheckBox.Location = new System.Drawing.Point(400, 188);
+            this.launchCheckBox.Location = new System.Drawing.Point(400, 216);
             this.launchCheckBox.Name = "launchCheckBox";
             this.launchCheckBox.Size = new System.Drawing.Size(203, 24);
             this.launchCheckBox.TabIndex = 13;
@@ -174,7 +176,7 @@ namespace DiscordFileMaster
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(615, 261);
+            this.ClientSize = new System.Drawing.Size(615, 287);
             this.Controls.Add(this.launchCheckBox);
             this.Controls.Add(this.progressCounter);
             this.Controls.Add(this.progressBar);
@@ -190,7 +192,7 @@ namespace DiscordFileMaster
             this.Controls.Add(this.joinButton);
             this.Controls.Add(this.inputTextLabel);
             this.Name = "FileJoiner";
-            this.Text = "FileJoiner";
+            this.Text = "File Joiner";
             this.ResumeLayout(false);
             this.PerformLayout();
 

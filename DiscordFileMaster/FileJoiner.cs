@@ -6,7 +6,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
+using FileMasterLibrary;
 
 namespace DiscordFileMaster
 {
@@ -64,70 +66,100 @@ namespace DiscordFileMaster
             string title = filenameBox.Text;
             string extension = extensionBox.Text;
 
-            //Verify input and output paths
-            if (Directory.Exists(folderPath))
+            //Disable window
+            this.Enabled = false;
+            this.Cursor = Cursors.WaitCursor;
+
+            //Start up thread that will start the "FileJoin" thread and update the UI thread on its progress
+            Thread monitoringJoinThread = new Thread(() => StartJoin(folderPath, outputDirectory, title, extension));
+            monitoringJoinThread.Start();
+        }
+
+        private void StartJoin(string inputFolderPath, string outputFolderPath, string outputFileName, string outputExtension)
+        {
+            //Create FileMaster Instance
+            FileMaster fileMasterInstance = new FileMaster();
+
+            //Spin up thread to start joining the pieces
+            Thread joinThread = new Thread(() => fileMasterInstance.FileJoin(inputFolderPath, outputFolderPath, outputFileName, outputExtension));
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            joinThread.Start();
+
+            //Uses "Invoke" to update user on the parameters being validated
+            progressCounter.Invoke((MethodInvoker)delegate 
             {
-                if (Directory.Exists(outputDirectory))
-                {
-                    //Temporarily diable window
-                    this.Enabled = false;
-                    this.Cursor = Cursors.WaitCursor;
+                progressBar.Maximum = 100;
+                progressCounter.Text = "Validating..."; 
+            });
+            while (!fileMasterInstance.IsFinished && !fileMasterInstance.IsValidated) ;
 
-                    //Get list of files in folder
-                    string[] files = Directory.GetFiles(folderPath, "*.piece");
-
-                    //Set max of progress bar
-                    progressBar.Maximum = files.Length;
-
-                    //Get potential output path
-                    string outputPath = @$"{outputDirectory}\{title}.{extension}";
-
-                    try
-                    {
-                        //Make new output file
-                        using (FileStream outStream = new FileStream(outputPath, FileMode.Create))
-                        {
-                            //Cycle through every piece file
-                            foreach (string fileDirectory in files)
-                            {
-                                //Prompt user which file is being operated on
-                                progressCounter.Text = fileDirectory;
-
-                                //Append to new output file
-                                using (FileStream fs = File.OpenRead(fileDirectory))
-                                {
-                                    fs.CopyTo(outStream);
-                                }
-
-                                //Increment progress bar
-                                progressBar.Increment(1);
-                            }
-                        }
-
-                        //Signal completion of join
-                        progressCounter.Text = "Complete";
-                        Process.Start("explorer.exe", outputDirectory);
-                        if(launchCheckBox.Checked)
-                        {
-                            var p = new Process();
-                            p.StartInfo = new ProcessStartInfo(outputPath)
-                            {
-                                UseShellExecute = true
-                            };
-                            p.Start();
-                        }
-                    }
-
-                    catch
-                    {
-                        progressCounter.Text = "Invalid Filename";
-                    }
-
-                    //Enable window again
+            //Check for errors and exit
+            if (fileMasterInstance.ExitError)
+            {
+                progressCounter.Invoke((MethodInvoker)delegate 
+                { 
+                    progressCounter.Text = $"ERROR: {fileMasterInstance.StatusMessage}";
                     this.Enabled = true;
                     this.Cursor = Cursors.Default;
+                });
+                return;
+            }
+
+            progressCounter.Invoke((MethodInvoker)delegate
+            {
+                progressCounter.Text = $"Total Number Of Pieces: {fileMasterInstance.TotalFiles}";
+            });
+
+            long currentNumFilesProcessed = 0;
+            while (!fileMasterInstance.IsFinished)
+            {
+                //Check if the number of files processed has changed
+                if (currentNumFilesProcessed != fileMasterInstance.NumFilesProcessed)
+                {
+                    currentNumFilesProcessed = fileMasterInstance.NumFilesProcessed;
+                    progressCounter.Invoke((MethodInvoker)delegate
+                    {
+                        progressCounter.Text = $"Pieces Joined: {currentNumFilesProcessed}/{fileMasterInstance.TotalFiles}";
+                        progressBar.Value = 100*(int)(currentNumFilesProcessed/fileMasterInstance.TotalFiles);
+                    });
                 }
             }
+
+            //Check for errors and exit
+            if (fileMasterInstance.ExitError)
+            {
+                progressCounter.Invoke((MethodInvoker)delegate
+                {
+                    progressCounter.Text = $"ERROR: {fileMasterInstance.StatusMessage}";
+                    this.Enabled = true;
+                    this.Cursor = Cursors.Default;
+                });
+                return;
+            }
+
+            //Split must be over
+            timer.Stop();
+            progressCounter.Invoke((MethodInvoker)delegate
+            {
+                progressCounter.Text = $"JOIN COMPLETE! Took {timer.ElapsedMilliseconds} milliseconds.";
+                this.Enabled = true;
+                this.Cursor = Cursors.Default;
+            });
+
+            //Start joined file if user asked
+            progressCounter.Invoke((MethodInvoker)delegate 
+            {
+                if (launchCheckBox.Checked)
+                {
+                    var p = new Process();
+                    p.StartInfo = new ProcessStartInfo(Path.Join(outputFolderPath, $"{outputFileName}.{outputExtension}"))
+                    {
+                        UseShellExecute = true
+                    };
+                    p.Start();
+                }
+            });
         }
     }
 }

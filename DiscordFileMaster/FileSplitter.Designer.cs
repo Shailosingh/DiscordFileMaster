@@ -37,7 +37,7 @@ namespace DiscordFileMaster
             this.folderDirectoryBox = new System.Windows.Forms.TextBox();
             this.folderSelectButton = new System.Windows.Forms.Button();
             this.progressBar = new System.Windows.Forms.ProgressBar();
-            this.byteCounter = new System.Windows.Forms.Label();
+            this.progressCounter = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // splitButton
@@ -113,21 +113,23 @@ namespace DiscordFileMaster
             this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
             this.progressBar.TabIndex = 7;
             // 
-            // byteCounter
+            // progressCounter
             // 
-            this.byteCounter.AutoSize = true;
-            this.byteCounter.Location = new System.Drawing.Point(13, 139);
-            this.byteCounter.Name = "byteCounter";
-            this.byteCounter.Size = new System.Drawing.Size(69, 20);
-            this.byteCounter.TabIndex = 8;
-            this.byteCounter.Text = "Waiting...";
+            this.progressCounter.AutoSize = true;
+            this.progressCounter.Location = new System.Drawing.Point(13, 139);
+            this.progressCounter.Name = "progressCounter";
+            this.progressCounter.Size = new System.Drawing.Size(534, 20);
+            this.progressCounter.TabIndex = 8;
+            this.progressCounter.Text = "Waiting.........................................................................." +
+    "................................................................................" +
+    "....";
             // 
             // FileSplitter
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(558, 209);
-            this.Controls.Add(this.byteCounter);
+            this.Controls.Add(this.progressCounter);
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.folderSelectButton);
             this.Controls.Add(this.folderDirectoryBox);
@@ -137,7 +139,7 @@ namespace DiscordFileMaster
             this.Controls.Add(this.fileTextLabel);
             this.Controls.Add(this.splitButton);
             this.Name = "FileSplitter";
-            this.Text = "FileSplitter";
+            this.Text = "File Splitter";
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -153,6 +155,6 @@ namespace DiscordFileMaster
         private System.Windows.Forms.TextBox folderDirectoryBox;
         private System.Windows.Forms.Button folderSelectButton;
         private System.Windows.Forms.ProgressBar progressBar;
-        private System.Windows.Forms.Label byteCounter;
+        private System.Windows.Forms.Label progressCounter;
     }
 }
