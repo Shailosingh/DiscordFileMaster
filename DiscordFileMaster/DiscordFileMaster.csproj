@@ -4,13 +4,13 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <Version>1.0.5</Version>
+    <Version>1.0.6</Version>
     <Copyright>Shailendra Singh Software</Copyright>
     <Description>Allows large filesto be split into 8 MB chunks to be sent on discord and also be put back together.</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FileMasterLibrary" Version="1.0.0" />
+    <PackageReference Include="FileMasterLibrary" Version="1.0.1" />
   </ItemGroup>
 
 </Project>
